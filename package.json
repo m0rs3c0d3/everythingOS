@@ -1,0 +1,40 @@
+{
+  "name": "everything-os",
+  "version": "1.0.0",
+  "description": "A Multi-Agent Operating System for Everything",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "demo": "npx tsx examples/demo.ts"
+  },
+  "keywords": [
+    "multi-agent",
+    "agent-system",
+    "event-driven",
+    "trading",
+    "healthcare",
+    "typescript",
+    "operating-system"
+  ],
+  "author": "m0rs3",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.2",
+    "tsx": "^4.6.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/m0rs3/everything-os"
+  }
+}
