@@ -1,10 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// EVERYTHINGOS - Services Module
-// Shared capabilities for agents
+// EVERYTHINGOS - Tools Module
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Memory
-export * from './memory';
+// Types
+export * from './ToolTypes';
 
-// Tools
-export * from './tools';
+// Registry
+export { ToolRegistry, toolRegistry } from './ToolRegistry';
+
+// Built-in tools
+export * from './builtin';

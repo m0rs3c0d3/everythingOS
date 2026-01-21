@@ -44,6 +44,9 @@ export * from './runtime/ActionTypes';
 // Config
 export { getConfig, updateConfig, SystemConfig } from './config/system';
 
+// Services
+export * from './services/memory';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // EverythingOS Main Class
 // ─────────────────────────────────────────────────────────────────────────────
@@ -55,6 +58,8 @@ import { pluginRegistry, PluginConfig } from './core/registry/PluginRegistry';
 import { workflowRegistry } from './core/workflow/WorkflowRegistry';
 import { snapshotManager } from './core/state/SnapshotManager';
 import { llmRouter } from './runtime/LLMRouter';
+import { memoryService } from './services/memory';
+import { toolRegistry } from './services/tools';
 import { getConfig, updateConfig, SystemConfig } from './config/system';
 import { startServer } from './api/server';
 
@@ -119,6 +124,9 @@ export class EverythingOS {
     // Stop auto snapshots
     snapshotManager.stopAutoSnapshot();
 
+    // Shutdown memory service
+    memoryService.shutdown();
+
     this.running = false;
     eventBus.emit('system:stopped', { timestamp: Date.now() });
   }
@@ -132,6 +140,8 @@ export class EverythingOS {
   get agents() { return agentRegistry; }
   get plugins() { return pluginRegistry; }
   get workflows() { return workflowRegistry; }
+  get memory() { return memoryService; }
+  get tools() { return toolRegistry; }
   get llm() { return llmRouter; }
   get isRunning() { return this.running; }
 }
