@@ -26,6 +26,7 @@ EverythingOS is a framework for building and orchestrating autonomous AI agents 
 - **Agent Lifecycle Management**: Built-in supervision, health monitoring, and automatic recovery
 - **Workflow Engine**: Define complex multi-step workflows with triggers, actions, and decision nodes
 - **State Management**: Persistent world state with snapshots and time-travel debugging
+- **Memory System**: Three-layer memory architecture enabling agents to learn and retain knowledge across sessions
 - **Plugin System**: Extensible integrations with Discord, Slack, GitHub, and more
 
 Think of it as an operating system where instead of running programs, you run intelligent agents that can perceive their environment, make decisions, take actions, and learn from the results.
@@ -36,6 +37,7 @@ Agents are autonomous entities that can operate independently to solve problems.
 
 - **Adapt to changing conditions**: Agents can perceive their environment and adjust their behavior accordingly
 - **Make intelligent decisions**: Using LLMs, agents can reason about complex situations and choose appropriate actions
+- **Learn and remember**: Three-layer memory system enables agents to retain knowledge across sessions and improve over time
 - **Work asynchronously**: Agents run independently and communicate through events, enabling parallel execution
 - **Specialize and collaborate**: Different agent types (perception, analysis, decision, execution, learning) can work together on complex tasks
 - **Handle uncertainty**: Agents can deal with incomplete information and make probabilistic decisions
@@ -404,14 +406,14 @@ protected async onTick(): Promise<void> {
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                           EVERYTHINGOS                                   │
 ├─────────────────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐   │
-│  │  EVENT BUS  │  │  WORKFLOW   │  │ SUPERVISOR  │  │   STATE     │   │
-│  │ • Pub/Sub   │  │ • Nodes     │  │ • Health    │  │ • World     │   │
-│  │ • Priority  │  │ • Triggers  │  │ • Policies  │  │ • Snapshots │   │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘   │
-│         └─────────────────┴─────────────────┴─────────────────┘         │
-│                                    │                                    │
-│  ┌─────────────────────────────────┴─────────────────────────────────┐ │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐ │
+│  │  EVENT   │  │ WORKFLOW │  │SUPERVISOR│  │  STATE   │  │  MEMORY  │ │
+│  │   BUS    │  │ • Nodes  │  │ • Health │  │ • World  │  │ • Working│ │
+│  │ • Pub/Sub│  │ • Trigger│  │ • Policy │  │ • Snapshot│ │ • Episod.│ │
+│  │ • Priority│ └──────────┘  └──────────┘  └──────────┘  │ • LongTerm│ │
+│  └──────────┘                                             └──────────┘ │
+│       │                                                         │       │
+│  ┌────┴─────────────────────────────────────────────────────────┴────┐ │
 │  │                         LLM ROUTER                                 │ │
 │  │   OpenAI │ Claude │ Gemini │ Ollama │ Custom                       │ │
 │  └───────────────────────────────────────────────────────────────────┘ │
@@ -567,6 +569,171 @@ await pluginRegistry.register({
 });
 ```
 
+### Memory System
+
+EverythingOS provides a three-layer memory architecture that enables agents to learn and retain knowledge across sessions.
+
+#### Memory Layers
+
+**Working Memory** - Short-term, scoped storage for active tasks
+- Per-agent and per-workflow scopes
+- Automatic cleanup with TTL support
+- Fast access for current context
+
+**Episodic Memory** - Conversation history and interactions
+- Tracks conversation turns with role and content
+- Automatic summarization for context windows
+- Searchable conversation history
+
+**Long-Term Memory** - Persistent knowledge base
+- Semantic search using embeddings
+- Multiple memory types (facts, events, decisions, patterns, etc.)
+- Importance-based pruning and retention
+
+#### Using Memory in Agents
+
+```typescript
+import { memoryService } from 'everythingos';
+
+class LearningAgent extends Agent {
+  private memory: AgentMemory;
+
+  constructor() {
+    super({
+      id: 'learning-agent',
+      name: 'Learning Agent',
+      type: 'learning',
+    });
+
+    // Get scoped memory for this agent
+    this.memory = memoryService.forAgent(this.id);
+  }
+
+  protected async onStart(): Promise<void> {
+    // Working memory - temporary context
+    this.memory.working.set('sessionStarted', Date.now());
+
+    // Long-term memory - recall past learnings
+    const pastPatterns = await this.memory.recall('user interaction patterns');
+
+    this.subscribe('user:message', async (event) => {
+      await this.handleMessage(event.payload);
+    });
+  }
+
+  private async handleMessage(message: any): Promise<void> {
+    // Store in episodic memory for conversation context
+    await this.memory.conversationTurn(
+      message.conversationId,
+      'user',
+      message.content
+    );
+
+    // Retrieve relevant context from long-term memory
+    const relevantMemories = await this.memory.recall(
+      message.content,
+      { limit: 5, minRelevance: 0.7 }
+    );
+
+    // Use LLM with memory context
+    const response = await this.think(
+      `Message: ${message.content}\n\nRelevant context: ${JSON.stringify(relevantMemories)}`,
+      { systemPrompt: 'You have access to past interactions. Use them to provide personalized responses.' }
+    );
+
+    // Store the response in episodic memory
+    await this.memory.conversationTurn(
+      message.conversationId,
+      'assistant',
+      response
+    );
+
+    // Learn from the interaction
+    await this.memory.remember({
+      content: `User prefers ${this.extractPreference(message.content)}`,
+      type: 'preference',
+      importance: 0.8,
+      tags: ['user-preference', 'interaction']
+    });
+
+    this.emit('bot:reply', { content: response });
+  }
+
+  protected async onTick(): Promise<void> {
+    // Periodic consolidation of learnings
+    const recentMemories = await this.memory.recall('', {
+      filter: { since: Date.now() - 3600000 },  // Last hour
+      limit: 100
+    });
+
+    if (recentMemories.length > 50) {
+      // Summarize and create a pattern
+      const summary = await this.think(
+        `Summarize these interactions into key patterns: ${JSON.stringify(recentMemories)}`
+      );
+
+      await this.memory.remember({
+        content: summary,
+        type: 'pattern',
+        importance: 0.9,
+        tags: ['consolidated', 'pattern']
+      });
+    }
+  }
+}
+```
+
+#### Memory API
+
+```typescript
+// Agent memory instance
+const agentMemory = memoryService.forAgent('my-agent-id');
+
+// Working memory - short-term context
+agentMemory.working.set('currentTask', { status: 'processing' });
+const task = agentMemory.working.get('currentTask');
+
+// Store in long-term memory
+await agentMemory.remember({
+  content: 'User prefers concise responses',
+  type: 'preference',
+  importance: 0.8,
+  tags: ['user-preference']
+});
+
+// Semantic recall from long-term memory
+const memories = await agentMemory.recall(
+  'user communication style',
+  {
+    limit: 5,
+    minRelevance: 0.7,
+    filter: { type: 'preference' }
+  }
+);
+
+// Conversation tracking
+await agentMemory.conversationTurn('conv-123', 'user', 'Hello!');
+await agentMemory.conversationTurn('conv-123', 'assistant', 'Hi there!');
+const context = agentMemory.getConversationContext('conv-123', 2000);
+
+// Decision context - includes relevant memories and conversation
+const decisionCtx = await agentMemory.getDecisionContext(
+  'Should I send a notification?',
+  'conv-123'
+);
+```
+
+#### Memory Types
+
+- **fact**: Discrete pieces of information
+- **event**: Things that happened
+- **conversation**: Message history
+- **decision**: Decisions that were made
+- **outcome**: Results of actions
+- **preference**: User or system preferences
+- **pattern**: Learned patterns from data
+- **summary**: Compressed information
+
 ## Directory Structure
 
 ```
@@ -578,6 +745,13 @@ everythingos/
 │   │   ├── supervisor/      # Agent health monitoring and policies
 │   │   ├── state/           # World state and snapshot management
 │   │   └── registry/        # Agent and plugin registration
+│   ├── services/
+│   │   └── memory/          # Three-layer memory architecture
+│   │       ├── WorkingMemory.ts      # Short-term scoped memory
+│   │       ├── EpisodicMemory.ts     # Conversation history
+│   │       ├── LongTermMemory.ts     # Persistent knowledge
+│   │       ├── MemoryService.ts      # Unified memory interface
+│   │       └── adapters/             # Storage backends
 │   ├── runtime/
 │   │   ├── Agent.ts         # Base agent class
 │   │   ├── LLMRouter.ts     # LLM provider abstraction
@@ -614,6 +788,10 @@ everythingos/
 | POST | `/api/events` | Emit an event |
 | GET | `/api/state` | Get world state |
 | POST | `/api/state/snapshot` | Create state snapshot |
+| POST | `/api/memory/remember` | Store in long-term memory |
+| POST | `/api/memory/recall` | Semantic search memory |
+| GET | `/api/memory/conversation/:id` | Get conversation history |
+| GET | `/api/memory/stats` | Get memory statistics |
 
 ## Environment Variables
 
