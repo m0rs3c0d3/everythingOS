@@ -1,13 +1,16 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// EVERYTHINGOS - Services Module
-// Shared capabilities for agents
+// EVERYTHINGOS - Capabilities Module
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Memory
-export * from './memory';
-
-// Tools
-export * from './tools';
-
-// Capabilities
-export * from './capabilities';
+export {
+  CapabilityDiscovery,
+  capabilityDiscovery,
+  CapabilityType,
+  CapabilityStatus,
+  Capability,
+  CapabilityCheck,
+  SystemCapabilities,
+  AgentCapabilities,
+  CapabilityRequirement,
+  RequirementCheckResult,
+} from './CapabilityDiscovery';
