@@ -158,6 +158,46 @@ async function route(
     return { status: 200, data: eventBus.getHistory({ limit }) };
   }
 
+  // Approvals
+  if (path === '/api/approvals' && method === 'GET') {
+    // Get pending approvals - emit request and collect from approval gate
+    const pending = agentRegistry.get('approval-gate');
+    if (pending && 'getPending' in pending) {
+      return { status: 200, data: (pending as { getPending: () => unknown[] }).getPending() };
+    }
+    return { status: 200, data: [] };
+  }
+
+  if (path.startsWith('/api/approvals/') && path.endsWith('/approve') && method === 'POST') {
+    const approvalId = path.split('/')[3];
+    const { approvedBy, reason } = body as { approvedBy?: string; reason?: string };
+    
+    eventBus.emit('approval:decision', {
+      approvalId,
+      approved: true,
+      approvedBy: approvedBy || 'api',
+      reason,
+      timestamp: Date.now(),
+    });
+    
+    return { status: 200, data: { success: true, approvalId, action: 'approved' } };
+  }
+
+  if (path.startsWith('/api/approvals/') && path.endsWith('/deny') && method === 'POST') {
+    const approvalId = path.split('/')[3];
+    const { deniedBy, reason } = body as { deniedBy?: string; reason?: string };
+    
+    eventBus.emit('approval:decision', {
+      approvalId,
+      approved: false,
+      approvedBy: deniedBy || 'api',
+      reason: reason || 'Denied via API',
+      timestamp: Date.now(),
+    });
+    
+    return { status: 200, data: { success: true, approvalId, action: 'denied' } };
+  }
+
   // State
   if (path === '/api/state') {
     return { status: 200, data: worldState.export() };
@@ -178,16 +218,19 @@ export function startServer(port = PORT): void {
     console.log(`🚀 EverythingOS API running on http://localhost:${port}`);
     console.log('');
     console.log('Endpoints:');
-    console.log('  GET  /health                    - Health check');
-    console.log('  GET  /api/workflows             - List workflows');
-    console.log('  POST /api/workflows             - Create workflow');
-    console.log('  POST /api/workflows/:id/execute - Execute workflow');
-    console.log('  GET  /api/agents                - List agents');
-    console.log('  POST /api/agents/:id/start      - Start agent');
-    console.log('  POST /api/agents/:id/stop       - Stop agent');
-    console.log('  GET  /api/plugins               - List plugins');
-    console.log('  POST /api/events                - Emit event');
-    console.log('  GET  /api/state                 - Get world state');
+    console.log('  GET  /health                      - Health check');
+    console.log('  GET  /api/workflows               - List workflows');
+    console.log('  POST /api/workflows               - Create workflow');
+    console.log('  POST /api/workflows/:id/execute   - Execute workflow');
+    console.log('  GET  /api/agents                  - List agents');
+    console.log('  POST /api/agents/:id/start        - Start agent');
+    console.log('  POST /api/agents/:id/stop         - Stop agent');
+    console.log('  GET  /api/plugins                 - List plugins');
+    console.log('  POST /api/events                  - Emit event');
+    console.log('  GET  /api/state                   - Get world state');
+    console.log('  GET  /api/approvals               - List pending approvals');
+    console.log('  POST /api/approvals/:id/approve   - Approve request');
+    console.log('  POST /api/approvals/:id/deny      - Deny request');
   });
 
   eventBus.emit('api:started', { port });

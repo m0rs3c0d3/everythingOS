@@ -40,12 +40,16 @@ export { Agent, AgentConfig, AgentStatus, AgentType } from './runtime/Agent';
 export { AgentContext, createAgentContext } from './runtime/AgentContext';
 export { llmRouter, LLMRouter, LLMProvider, LLMRequest, LLMResponse } from './runtime/LLMRouter';
 export * from './runtime/ActionTypes';
+export * from './runtime/IntentContract';
 
 // Config
 export { getConfig, updateConfig, SystemConfig } from './config/system';
 
 // Services
-export * from './services/memory';
+export * from './services';
+
+// Agents
+export * from './agents';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // EverythingOS Main Class
@@ -58,8 +62,10 @@ import { pluginRegistry, PluginConfig } from './core/registry/PluginRegistry';
 import { workflowRegistry } from './core/workflow/WorkflowRegistry';
 import { snapshotManager } from './core/state/SnapshotManager';
 import { llmRouter } from './runtime/LLMRouter';
+import { intentManager } from './runtime/IntentContract';
 import { memoryService } from './services/memory';
 import { toolRegistry } from './services/tools';
+import { capabilityDiscovery } from './services/capabilities';
 import { getConfig, updateConfig, SystemConfig } from './config/system';
 import { startServer } from './api/server';
 
@@ -142,6 +148,8 @@ export class EverythingOS {
   get workflows() { return workflowRegistry; }
   get memory() { return memoryService; }
   get tools() { return toolRegistry; }
+  get intents() { return intentManager; }
+  get capabilities() { return capabilityDiscovery; }
   get llm() { return llmRouter; }
   get isRunning() { return this.running; }
 }
