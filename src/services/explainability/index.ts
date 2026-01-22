@@ -1,16 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// EVERYTHINGOS - Services Module
-// Shared capabilities for agents
+// EVERYTHINGOS - Explainability Module
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Memory
-export * from './memory';
-
-// Tools
-export * from './tools';
-
-// Capabilities
-export * from './capabilities';
-
-// Explainability
-export * from './explainability';
+export {
+  DecisionExplainability,
+  decisionExplainability,
+  DecisionRecord,
+  DecisionQuery,
+  DecisionStats,
+} from './DecisionExplainability';

@@ -8,6 +8,7 @@ import { workflowRegistry } from '../core/workflow/WorkflowRegistry';
 import { agentRegistry } from '../core/registry/AgentRegistry';
 import { pluginRegistry } from '../core/registry/PluginRegistry';
 import { worldState } from '../core/state/WorldState';
+import { decisionExplainability } from '../services/explainability';
 
 // Simple HTTP server without Express dependency for now
 import { createServer, IncomingMessage, ServerResponse } from 'http';
@@ -198,6 +199,37 @@ async function route(
     return { status: 200, data: { success: true, approvalId, action: 'denied' } };
   }
 
+  // Decisions (Explainability)
+  if (path === '/api/decisions' && method === 'GET') {
+    const agentId = params.get('agentId') ?? undefined;
+    const status = params.get('status') as 'pending' | 'completed' | 'failed' | undefined;
+    const limit = parseInt(params.get('limit') || '50');
+    
+    const records = decisionExplainability.query({ agentId, status, limit });
+    return { status: 200, data: records };
+  }
+
+  if (path === '/api/decisions/stats' && method === 'GET') {
+    return { status: 200, data: decisionExplainability.stats() };
+  }
+
+  if (path.startsWith('/api/decisions/') && method === 'GET') {
+    const id = path.split('/')[3];
+    
+    if (path.endsWith('/explain')) {
+      const decisionId = path.split('/')[3];
+      const explanation = decisionExplainability.explain(decisionId);
+      return explanation 
+        ? { status: 200, data: { explanation } }
+        : { status: 404, data: { error: 'Decision not found' } };
+    }
+    
+    const record = decisionExplainability.get(id);
+    return record 
+      ? { status: 200, data: record }
+      : { status: 404, data: { error: 'Decision not found' } };
+  }
+
   // State
   if (path === '/api/state') {
     return { status: 200, data: worldState.export() };
@@ -231,6 +263,10 @@ export function startServer(port = PORT): void {
     console.log('  GET  /api/approvals               - List pending approvals');
     console.log('  POST /api/approvals/:id/approve   - Approve request');
     console.log('  POST /api/approvals/:id/deny      - Deny request');
+    console.log('  GET  /api/decisions               - List decisions');
+    console.log('  GET  /api/decisions/stats         - Decision statistics');
+    console.log('  GET  /api/decisions/:id           - Get decision record');
+    console.log('  GET  /api/decisions/:id/explain   - Explain decision');
   });
 
   eventBus.emit('api:started', { port });
