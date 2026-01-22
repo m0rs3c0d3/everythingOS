@@ -9,6 +9,7 @@ import { agentRegistry } from '../core/registry/AgentRegistry';
 import { pluginRegistry } from '../core/registry/PluginRegistry';
 import { worldState } from '../core/state/WorldState';
 import { decisionExplainability } from '../services/explainability';
+import { pluginTrustManager, TrustLevel } from '../services/trust';
 
 // Simple HTTP server without Express dependency for now
 import { createServer, IncomingMessage, ServerResponse } from 'http';
@@ -230,6 +231,57 @@ async function route(
       : { status: 404, data: { error: 'Decision not found' } };
   }
 
+  // Trust Management
+  if (path === '/api/trust' && method === 'GET') {
+    return { status: 200, data: pluginTrustManager.listConfigs() };
+  }
+
+  if (path === '/api/trust/stats' && method === 'GET') {
+    return { status: 200, data: pluginTrustManager.stats() };
+  }
+
+  if (path === '/api/trust/violations' && method === 'GET') {
+    const pluginId = params.get('pluginId') ?? undefined;
+    const limit = parseInt(params.get('limit') || '100');
+    return { status: 200, data: pluginTrustManager.getViolations({ pluginId, limit }) };
+  }
+
+  if (path.startsWith('/api/trust/') && method === 'GET') {
+    const pluginId = path.split('/')[3];
+    const config = pluginTrustManager.getTrustConfig(pluginId);
+    return config 
+      ? { status: 200, data: config }
+      : { status: 404, data: { error: 'Plugin trust config not found' } };
+  }
+
+  if (path.startsWith('/api/trust/') && path.endsWith('/level') && method === 'POST') {
+    const pluginId = path.split('/')[3];
+    const { level, approvedBy } = body as { level: TrustLevel; approvedBy?: string };
+    
+    if (!['trusted', 'restricted', 'sandboxed'].includes(level)) {
+      return { status: 400, data: { error: 'Invalid trust level' } };
+    }
+    
+    pluginTrustManager.setTrustLevel(pluginId, level, { approvedBy: approvedBy || 'api' });
+    return { status: 200, data: { success: true, pluginId, level } };
+  }
+
+  if (path.startsWith('/api/trust/') && path.endsWith('/grant') && method === 'POST') {
+    const pluginId = path.split('/')[3];
+    const { permission, grantedBy } = body as { permission: string; grantedBy?: string };
+    
+    pluginTrustManager.grantPermission(pluginId, permission as any, { grantedBy: grantedBy || 'api' });
+    return { status: 200, data: { success: true, pluginId, permission } };
+  }
+
+  if (path.startsWith('/api/trust/') && path.endsWith('/revoke') && method === 'POST') {
+    const pluginId = path.split('/')[3];
+    const { permission } = body as { permission: string };
+    
+    const revoked = pluginTrustManager.revokePermission(pluginId, permission as any);
+    return { status: 200, data: { success: revoked, pluginId, permission } };
+  }
+
   // State
   if (path === '/api/state') {
     return { status: 200, data: worldState.export() };
@@ -267,6 +319,12 @@ export function startServer(port = PORT): void {
     console.log('  GET  /api/decisions/stats         - Decision statistics');
     console.log('  GET  /api/decisions/:id           - Get decision record');
     console.log('  GET  /api/decisions/:id/explain   - Explain decision');
+    console.log('  GET  /api/trust                   - List trust configs');
+    console.log('  GET  /api/trust/stats             - Trust statistics');
+    console.log('  GET  /api/trust/:id               - Get plugin trust config');
+    console.log('  POST /api/trust/:id/level         - Set trust level');
+    console.log('  POST /api/trust/:id/grant         - Grant permission');
+    console.log('  POST /api/trust/:id/revoke        - Revoke permission');
   });
 
   eventBus.emit('api:started', { port });

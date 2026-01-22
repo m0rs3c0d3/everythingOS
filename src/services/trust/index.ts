@@ -1,19 +1,15 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// EVERYTHINGOS - Services Module
-// Shared capabilities for agents
+// EVERYTHINGOS - Trust Module
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Memory
-export * from './memory';
-
-// Tools
-export * from './tools';
-
-// Capabilities
-export * from './capabilities';
-
-// Explainability
-export * from './explainability';
-
-// Trust
-export * from './trust';
+export {
+  PluginTrustManager,
+  pluginTrustManager,
+  TrustLevel,
+  PluginPermission,
+  PermissionType,
+  TrustPolicy,
+  TrustRestriction,
+  PluginTrustConfig,
+  TrustViolation,
+} from './PluginTrustManager';

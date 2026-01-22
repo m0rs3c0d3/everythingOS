@@ -5,12 +5,14 @@
 
 import { eventBus } from '../event-bus/EventBus';
 import { workflowEngine } from '../workflow/WorkflowEngine';
+import { pluginTrustManager } from '../../services/trust';
 
 export interface PluginAction {
   name: string;
   description?: string;
   schema?: Record<string, unknown>;  // JSON Schema for validation
   handler: (input: unknown, context: PluginContext) => Promise<unknown>;
+  requiredPermissions?: Array<'network' | 'filesystem' | 'state:write' | 'secrets'>;
 }
 
 export interface PluginConfig {
@@ -121,8 +123,34 @@ export class PluginRegistry {
       throw new Error(`Action not found: ${pluginId}:${actionName}`);
     }
 
+    // Check trust/permissions
+    if (action.requiredPermissions) {
+      for (const permission of action.requiredPermissions) {
+        if (!pluginTrustManager.checkPermission(pluginId, permission, actionName)) {
+          throw new Error(`Permission denied: ${pluginId} requires '${permission}' for action '${actionName}'`);
+        }
+      }
+    }
+
+    // Check general plugin:invoke permission (always required)
+    if (!pluginTrustManager.checkPermission(pluginId, 'plugins:invoke', actionName)) {
+      throw new Error(`Plugin ${pluginId} is not allowed to invoke actions`);
+    }
+
+    // Get timeout from trust config
+    const timeout = pluginTrustManager.getTimeout(pluginId);
+    
     const context = this.createContext(pluginId);
-    return action.handler(input, context);
+    
+    // Execute with timeout
+    const result = await Promise.race([
+      action.handler(input, context),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error(`Plugin action timeout: ${timeout}ms`)), timeout)
+      ),
+    ]);
+
+    return result;
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
