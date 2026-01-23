@@ -1,19 +1,25 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// EVERYTHINGOS - Hardware Plugins
-// Sensors, actuators, and hardware abstractions
+// EVERYTHINGOS - Hardware Sensors
+// Input devices that read from the physical world
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Base classes and types
-export * from './_base';
+// Temperature (I2C)
+export {
+  TemperatureSensor,
+  TemperatureSensorConfig,
+  TemperatureReading,
+} from './TemperatureSensor';
 
-// Protocols
-export * from './protocols';
+// IMU - Accelerometer/Gyroscope (I2C)
+export {
+  IMUSensor,
+  IMUSensorConfig,
+  IMUReading,
+} from './IMUSensor';
 
-// Sensors
-export * from './sensors';
-
-// Actuators
-export * from './actuators';
-
-// Platforms (to be added)
-// export * from './platforms';
+// GPS (Serial/NMEA)
+export {
+  GPSSensor,
+  GPSSensorConfig,
+  GPSReading,
+} from './GPSSensor';

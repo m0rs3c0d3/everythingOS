@@ -1,19 +1,24 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// EVERYTHINGOS - Hardware Plugins
-// Sensors, actuators, and hardware abstractions
+// EVERYTHINGOS - Hardware Actuators
+// Output devices that affect the physical world
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Base classes and types
-export * from './_base';
+// Servo Motors (PWM)
+export {
+  ServoActuator,
+  ServoConfig,
+} from './ServoActuator';
 
-// Protocols
-export * from './protocols';
+// DC and Stepper Motors
+export {
+  MotorActuator,
+  MotorConfig,
+  MotorState,
+} from './MotorActuator';
 
-// Sensors
-export * from './sensors';
-
-// Actuators
-export * from './actuators';
-
-// Platforms (to be added)
-// export * from './platforms';
+// Relays (On/Off switching)
+export {
+  RelayActuator,
+  RelayConfig,
+  RelayState,
+} from './RelayActuator';
