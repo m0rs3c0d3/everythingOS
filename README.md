@@ -49,6 +49,7 @@ Agents are autonomous entities that can operate independently to solve problems.
 - **Customer Support**: Analysis agents understand queries, decision agents route to appropriate handlers, learning agents improve over time
 - **DevOps Automation**: Monitoring agents detect issues, decision agents triage severity, execution agents apply fixes
 - **Research Assistants**: Agents can search, summarize, synthesize information, and maintain context across long investigations
+- **Autonomous Robotics**: Secure robotics (in process).
 
 ## Quick Start
 
