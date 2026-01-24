@@ -29,7 +29,7 @@ EverythingOS is a framework for building and orchestrating autonomous AI agents 
 - **Memory System**: Three-layer memory architecture enabling agents to learn and retain knowledge across sessions
 - **Plugin System**: Extensible integrations with Discord, Slack, GitHub, and more
 
-Think of it as an operating system where instead of running programs, you run intelligent agents that can perceive their environment, make decisions, take actions, and learn from the results.
+Think of it as an operating system where instead of running programs, you run intelligent agents that can perceive their environment, make decisions, take actions, and learn from the results. Most agent frameworks assume the world is safe, fast, and reversible. EverythingOS assumes the opposite.
 
 ## Why Use Agents?
 
@@ -49,7 +49,7 @@ Agents are autonomous entities that can operate independently to solve problems.
 - **Customer Support**: Analysis agents understand queries, decision agents route to appropriate handlers, learning agents improve over time
 - **DevOps Automation**: Monitoring agents detect issues, decision agents triage severity, execution agents apply fixes
 - **Research Assistants**: Agents can search, summarize, synthesize information, and maintain context across long investigations
-- **Autonomous Robotics**: Secure robotics (in process).
+- **Autonomous Robotics**: EverythingOS is designed to bridge high-level decision systems with physical control layers (e.g. ROS2) while preserving human oversight and safety guarantees.
 
 ## Quick Start
 
