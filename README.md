@@ -404,33 +404,61 @@ protected async onTick(): Promise<void> {
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                           EVERYTHINGOS                                   │
-├─────────────────────────────────────────────────────────────────────────┤
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐ │
-│  │  EVENT   │  │ WORKFLOW │  │SUPERVISOR│  │  STATE   │  │  MEMORY  │ │
-│  │   BUS    │  │ • Nodes  │  │ • Health │  │ • World  │  │ • Working│ │
-│  │ • Pub/Sub│  │ • Trigger│  │ • Policy │  │ • Snapshot│ │ • Episod.│ │
-│  │ • Priority│ └──────────┘  └──────────┘  └──────────┘  │ • LongTerm│ │
-│  └──────────┘                                             └──────────┘ │
-│       │                                                         │       │
-│  ┌────┴─────────────────────────────────────────────────────────┴────┐ │
-│  │                         LLM ROUTER                                 │ │
-│  │   OpenAI │ Claude │ Gemini │ Ollama │ Custom                       │ │
-│  └───────────────────────────────────────────────────────────────────┘ │
-│                                    │                                    │
-│  ┌─────────────────────────────────┴─────────────────────────────────┐ │
-│  │                           AGENTS                                   │ │
-│  │   Perception │ Analysis │ Decision │ Execution │ Learning          │ │
-│  └───────────────────────────────────────────────────────────────────┘ │
-│                                    │                                    │
-│  ┌─────────────────────────────────┴─────────────────────────────────┐ │
-│  │                          PLUGINS                                   │ │
-│  │  Discord │ Slack │ X │ Email │ GitHub │ Calendar │ Crypto │ ...    │ │
-│  └───────────────────────────────────────────────────────────────────┘ │
-├─────────────────────────────────────────────────────────────────────────┤
-│                            REST API                                      │
-└─────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────┐
+│                                      EVERYTHINGOS                                         │
+├──────────────────────────────────────────────────────────────────────────────────────────┤
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌─────────────┐  │
+│  │  EVENT   │  │ WORKFLOW │  │SUPERVISOR│  │  STATE   │  │  MEMORY  │  │    TRUST    │  │
+│  │   BUS    │  │ • Nodes  │  │ • Health │  │ • World  │  │ • Working│  │ • Permissions│ │
+│  │ • Pub/Sub│  │ • Trigger│  │ • Policy │  │ • Snapshot│ │ • Episod.│  │ • Sandboxing│  │
+│  │ • Priority│ └──────────┘  └──────────┘  └──────────┘  │ • LongTerm│ │ • Audit     │  │
+│  └──────────┘                                             └──────────┘  └─────────────┘  │
+│       │                                                         │               │         │
+│  ┌────┴─────────────────────────────────────────────────────────┴───────────────┴──────┐ │
+│  │                              LLM ROUTER                                              │ │
+│  │        OpenAI │ Claude │ Gemini │ Ollama │ Custom                                    │ │
+│  └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│                                         │                                                 │
+│  ┌──────────────────────────────────────┴──────────────────────────────────────────────┐ │
+│  │                                    AGENTS                                            │ │
+│  │   Perception │ Analysis │ Decision │ Execution │ Learning │ ApprovalGate             │ │
+│  └─────────────────────────────────────────────────────────────────────────────────────┘ │
+│         │                               │                               │                 │
+│  ┌──────┴───────┐  ┌───────────────────┴───────────────────┐  ┌────────┴──────────────┐ │
+│  │ EXPLAINABILITY│ │           INTENT & TOOLS               │  │     TOOL REGISTRY     │ │
+│  │ • Decisions   │ │ • IntentContract                       │  │ • Registration        │ │
+│  │ • Reasoning   │ │ • Constraints                          │  │ • Permissions         │ │
+│  │ • Audit Trail │ │ • Dependencies                         │  │ • Execution           │ │
+│  └───────────────┘ └────────────────────────────────────────┘  └───────────────────────┘ │
+│                                         │                                                 │
+│  ┌──────────────────────────────────────┴──────────────────────────────────────────────┐ │
+│  │                                   PLUGINS                                            │ │
+│  │   Discord │ Slack │ X │ Email │ GitHub │ Calendar │ Crypto │ ...                     │ │
+│  └─────────────────────────────────────────────────────────────────────────────────────┘ │
+├──────────────────────────────────────────────────────────────────────────────────────────┤
+│                                      BRIDGES                                              │
+├──────────────────────────────────────────────────────────────────────────────────────────┤
+│  ┌──────────────────────────────────────────────────────────────────────────────────┐    │
+│  │                              ROBOTICS LAYER                                       │    │
+│  │  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐  │    │
+│  │  │   ROS2 BRIDGE  │  │MOTION CONTROLLER│ │ SAFETY MONITOR │  │ FORMATION CTRL │  │    │
+│  │  │ • Topics       │  │ • Trajectories │  │ • Zones        │  │ • Swarm        │  │    │
+│  │  │ • Services     │  │ • Profiles     │  │ • Watchdogs    │  │ • Consensus    │  │    │
+│  │  │ • Actions      │  │ • E-Stop       │  │ • E-Stop       │  │ • Leader       │  │    │
+│  │  └────────────────┘  └────────────────┘  └────────────────┘  └────────────────┘  │    │
+│  └──────────────────────────────────────────────────────────────────────────────────┘    │
+│  ┌──────────────────────────────────────────────────────────────────────────────────┐    │
+│  │                              HARDWARE LAYER                                       │    │
+│  │  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐  ┌────────────────┐  │    │
+│  │  │   PLATFORMS    │  │    SENSORS     │  │   ACTUATORS    │  │   PROTOCOLS    │  │    │
+│  │  │ • Jetson       │  │ • IMU          │  │ • Motors       │  │ • I2C          │  │    │
+│  │  │ • Raspberry Pi │  │ • GPS          │  │ • Servos       │  │ • SPI          │  │    │
+│  │  │ • Deployment   │  │ • Temperature  │  │ • Relays       │  │ • Serial       │  │    │
+│  │  └────────────────┘  └────────────────┘  └────────────────┘  └────────────────┘  │    │
+│  └──────────────────────────────────────────────────────────────────────────────────┘    │
+├──────────────────────────────────────────────────────────────────────────────────────────┤
+│                                       REST API                                            │
+└──────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Core Concepts
@@ -735,6 +763,745 @@ const decisionCtx = await agentMemory.getDecisionContext(
 - **pattern**: Learned patterns from data
 - **summary**: Compressed information
 
+## Hardware Platform Integration
+
+EverythingOS supports direct integration with physical hardware platforms for edge deployment and robotics applications.
+
+### Supported Platforms
+
+#### NVIDIA Jetson (Nano, Xavier, Orin)
+
+```typescript
+import { JetsonPlatform } from 'everythingos/plugins/platforms';
+
+const jetson = new JetsonPlatform({
+  gpioEnabled: true,
+  i2cEnabled: true,
+  spiEnabled: true,
+  cameraEnabled: true,
+  cudaEnabled: true,
+});
+
+await jetson.initialize();
+
+// Access GPIO
+const gpio = jetson.getGPIO();
+await gpio.setMode(18, 'output');
+await gpio.write(18, true);
+
+// Monitor system resources
+const metrics = await jetson.getMetrics();
+console.log(`GPU Utilization: ${metrics.gpuUtilization}%`);
+console.log(`Power Mode: ${metrics.powerMode}`);
+
+// Use CUDA acceleration
+if (jetson.isCudaAvailable()) {
+  const result = await jetson.runCudaKernel(myKernel, data);
+}
+```
+
+**Features:**
+- GPIO, I2C, SPI, CSI Camera support
+- CUDA acceleration for ML inference
+- Power management (MAXN, 15W, 10W, 5W modes)
+- GPU memory and utilization monitoring
+- TensorRT inference capability
+
+#### Raspberry Pi (3, 4, 5, Zero 2)
+
+```typescript
+import { RaspberryPiPlatform } from 'everythingos/plugins/platforms';
+
+const rpi = new RaspberryPiPlatform({
+  gpioLibrary: 'pigpio', // or 'rpi-gpio', 'onoff'
+  i2cEnabled: true,
+  spiEnabled: true,
+  cameraEnabled: true,
+});
+
+await rpi.initialize();
+
+// Read sensor via I2C
+const i2c = rpi.getI2C();
+const sensorData = await i2c.readRegister(0x68, 0x3B, 6);
+
+// Monitor temperature and throttling
+const health = await rpi.getHealth();
+console.log(`Temperature: ${health.temperature}°C`);
+console.log(`Throttled: ${health.throttled}`);
+```
+
+**Features:**
+- Multiple GPIO library support (pigpio, rpi-gpio, onoff)
+- I2C, SPI, camera (picamera2/libcamera) interfaces
+- Real-time temperature and throttle monitoring
+- Hardware watchdog support
+
+### Deployment Manager
+
+Manage fleets of devices with cross-platform deployment capabilities.
+
+```typescript
+import { DeploymentManager } from 'everythingos/plugins/platforms';
+
+const deploymentManager = new DeploymentManager();
+
+// Auto-detect platform
+const platform = await deploymentManager.detectPlatform();
+console.log(`Detected: ${platform.type} - ${platform.model}`);
+
+// Deploy agent configuration
+await deploymentManager.deploy({
+  deviceId: 'robot-001',
+  config: agentConfig,
+  watchdogEnabled: true,
+  healthCheckInterval: 30000,
+});
+
+// OTA updates with rollback
+await deploymentManager.update({
+  deviceId: 'robot-001',
+  version: '2.1.0',
+  rollbackOnFailure: true,
+});
+
+// Monitor fleet health
+const fleetStatus = await deploymentManager.getFleetHealth();
+for (const device of fleetStatus) {
+  console.log(`${device.id}: ${device.status} (${device.uptime}s uptime)`);
+}
+```
+
+## Swarm Coordination
+
+Coordinate multiple agents or robots working together as a swarm.
+
+### Swarm Coordinator
+
+```typescript
+import { SwarmCoordinator } from 'everythingos/plugins/swarm';
+
+const coordinator = new SwarmCoordinator({
+  heartbeatInterval: 1000,
+  taskTimeout: 30000,
+  consensusThreshold: 0.6,
+});
+
+await coordinator.start();
+
+// Agents automatically discovered via heartbeat
+coordinator.on('agent:discovered', (agent) => {
+  console.log(`Agent ${agent.id} joined swarm`);
+});
+
+// Distribute tasks based on capabilities and battery
+await coordinator.assignTask({
+  id: 'explore-zone-a',
+  type: 'exploration',
+  requirements: {
+    capabilities: ['camera', 'lidar'],
+    minBattery: 30,
+  },
+  priority: 'high',
+});
+
+// Achieve distributed consensus
+const decision = await coordinator.requestConsensus({
+  topic: 'return-to-base',
+  options: ['now', 'in-5-minutes', 'continue'],
+  timeout: 5000,
+});
+console.log(`Swarm decided: ${decision.result}`);
+
+// Leader election for coordinated actions
+const leader = await coordinator.electLeader();
+console.log(`New swarm leader: ${leader.id}`);
+```
+
+### Formation Controller
+
+Control multi-robot formations with collision avoidance.
+
+```typescript
+import { FormationController } from 'everythingos/plugins/swarm';
+
+const formation = new FormationController({
+  positionTolerance: 0.5, // meters
+  headingTolerance: 5,    // degrees
+  collisionRadius: 1.0,
+});
+
+// Define robot positions
+formation.addRobot('robot-1', { x: 0, y: 0, heading: 0 });
+formation.addRobot('robot-2', { x: 0, y: 2, heading: 0 });
+formation.addRobot('robot-3', { x: 0, y: 4, heading: 0 });
+
+// Create formation (line, column, wedge, diamond, circle, grid)
+await formation.setFormation('wedge', {
+  leaderId: 'robot-1',
+  spacing: 2.0,
+});
+
+// Follow path as a group
+await formation.followPath([
+  { x: 10, y: 0 },
+  { x: 10, y: 10 },
+  { x: 0, y: 10 },
+]);
+
+// Check formation status
+const status = formation.getFormationStatus();
+console.log(`Formation achieved: ${status.achieved}`);
+console.log(`Max deviation: ${status.maxDeviation}m`);
+```
+
+## ROS2 Bridge & Robotics
+
+Full integration with ROS2 for advanced robotics applications.
+
+### ROS2 Bridge
+
+```typescript
+import { ROS2Bridge } from 'everythingos/plugins/robotics';
+
+const ros = new ROS2Bridge({
+  url: 'ws://localhost:9090',
+  namespace: '/robot1',
+});
+
+await ros.connect();
+
+// Subscribe to ROS topics
+ros.subscribe('/scan', 'sensor_msgs/LaserScan', (msg) => {
+  console.log(`Received ${msg.ranges.length} range readings`);
+});
+
+// Publish to ROS topics
+ros.publish('/cmd_vel', 'geometry_msgs/Twist', {
+  linear: { x: 0.5, y: 0, z: 0 },
+  angular: { x: 0, y: 0, z: 0.1 },
+});
+
+// Call ROS services
+const mapData = await ros.callService(
+  '/map_server/get_map',
+  'nav_msgs/GetMap',
+  {},
+  5000 // timeout
+);
+
+// Send navigation goals with feedback
+const goal = ros.sendNavigationGoal({
+  x: 5.0, y: 3.0, theta: 1.57
+});
+
+goal.on('feedback', (feedback) => {
+  console.log(`Distance remaining: ${feedback.distance_remaining}m`);
+});
+
+goal.on('result', (result) => {
+  console.log(`Navigation ${result.success ? 'succeeded' : 'failed'}`);
+});
+
+// Map EverythingOS events to ROS topics
+ros.mapEventToTopic('robot:move', '/cmd_vel', (event) => ({
+  linear: { x: event.payload.speed, y: 0, z: 0 },
+  angular: { x: 0, y: 0, z: event.payload.turn },
+}));
+```
+
+### Motion Controller
+
+Coordinated multi-joint motion with trajectory planning.
+
+```typescript
+import { MotionController } from 'everythingos/plugins/robotics';
+
+const motion = new MotionController({
+  joints: ['base', 'shoulder', 'elbow', 'wrist', 'gripper'],
+  limits: {
+    base: { min: -180, max: 180, maxVelocity: 60 },
+    shoulder: { min: -90, max: 90, maxVelocity: 45 },
+    elbow: { min: 0, max: 135, maxVelocity: 60 },
+    wrist: { min: -90, max: 90, maxVelocity: 90 },
+    gripper: { min: 0, max: 100, maxVelocity: 100 },
+  },
+});
+
+// Move to position with synchronized joints
+await motion.moveTo({
+  base: 45,
+  shoulder: -30,
+  elbow: 90,
+  wrist: 0,
+  gripper: 50,
+}, {
+  profile: 's-curve', // or 'trapezoidal', 'linear'
+  duration: 2000,
+});
+
+// Execute trajectory with waypoints
+await motion.executeTrajectory([
+  { positions: { base: 0, shoulder: 0, elbow: 0 }, time: 0 },
+  { positions: { base: 45, shoulder: -30, elbow: 90 }, time: 1000 },
+  { positions: { base: 90, shoulder: -45, elbow: 120 }, time: 2000 },
+]);
+
+// Home all joints
+await motion.home();
+
+// Emergency stop
+await motion.emergencyStop();
+```
+
+### Safety Monitor
+
+Real-time safety enforcement with zone monitoring and emergency responses.
+
+```typescript
+import { SafetyMonitor } from 'everythingos/plugins/robotics';
+
+const safety = new SafetyMonitor({
+  updateRate: 20, // Hz
+  defaultResponse: 'stop',
+});
+
+// Define safety zones
+safety.addZone({
+  id: 'workspace',
+  type: 'box',
+  bounds: { x: [-2, 2], y: [-2, 2], z: [0, 2] },
+  response: 'warn',
+});
+
+safety.addZone({
+  id: 'keep-out',
+  type: 'sphere',
+  center: { x: 0, y: 1, z: 1 },
+  radius: 0.5,
+  response: 'e-stop',
+});
+
+// Add safety rules
+safety.addRule({
+  id: 'velocity-limit',
+  condition: (state) => state.velocity > 1.0,
+  response: 'slow',
+  message: 'Velocity exceeds safe limit',
+});
+
+// Set watchdog timer
+safety.setWatchdog('heartbeat', 500, () => {
+  console.log('Communication timeout - stopping robot');
+  motion.emergencyStop();
+});
+
+// Monitor violations
+safety.on('violation', (violation) => {
+  console.log(`Safety violation: ${violation.rule} - ${violation.message}`);
+  console.log(`Response: ${violation.response}`);
+});
+
+// Start monitoring
+await safety.start();
+```
+
+## Sensors & Actuators
+
+Hardware abstraction layer for common sensors and actuators.
+
+### Sensors
+
+```typescript
+import { IMUSensor, GPSSensor, TemperatureSensor } from 'everythingos/plugins/hardware';
+
+// IMU Sensor (MPU6050, MPU9250, LSM6DS3, BNO055)
+const imu = new IMUSensor({
+  chip: 'MPU9250',
+  i2cAddress: 0x68,
+  accelRange: '4g',
+  gyroRange: '500dps',
+  sampleRate: 100,
+});
+
+await imu.initialize();
+await imu.calibrate();
+
+imu.on('data', (data) => {
+  console.log(`Accel: ${data.accel.x}, ${data.accel.y}, ${data.accel.z}`);
+  console.log(`Gyro: ${data.gyro.x}, ${data.gyro.y}, ${data.gyro.z}`);
+  console.log(`Mag: ${data.mag.x}, ${data.mag.y}, ${data.mag.z}`);
+});
+
+// GPS Sensor (NEO-6M, NEO-7M, NEO-M8N, BN-220)
+const gps = new GPSSensor({
+  chip: 'NEO-M8N',
+  serialPort: '/dev/ttyUSB0',
+  baudRate: 9600,
+});
+
+await gps.initialize();
+
+gps.on('fix', (position) => {
+  console.log(`Position: ${position.lat}, ${position.lon}`);
+  console.log(`Altitude: ${position.altitude}m`);
+  console.log(`Satellites: ${position.satellites}`);
+  console.log(`Fix type: ${position.fixType}`); // none, 2D, 3D, DGPS
+});
+
+// Calculate distance and bearing
+const distance = gps.distanceTo(targetLat, targetLon);
+const bearing = gps.bearingTo(targetLat, targetLon);
+```
+
+### Actuators
+
+```typescript
+import { MotorActuator, ServoActuator, RelayActuator } from 'everythingos/plugins/hardware';
+
+// DC Motor with encoder (L298N, TB6612)
+const motor = new MotorActuator({
+  driver: 'L298N',
+  pins: { pwm: 18, dir1: 23, dir2: 24, encoder: 25 },
+  type: 'dc',
+  maxRPM: 200,
+});
+
+await motor.initialize();
+await motor.setSpeed(0.5);  // 50% forward
+await motor.setSpeed(-0.3); // 30% reverse
+await motor.stop();
+
+// Stepper Motor (A4988, DRV8825, TMC2209)
+const stepper = new MotorActuator({
+  driver: 'TMC2209',
+  pins: { step: 18, dir: 23, enable: 24 },
+  type: 'stepper',
+  stepsPerRevolution: 200,
+  microstepping: 16,
+});
+
+await stepper.initialize();
+await stepper.moveSteps(1600); // One full revolution at 16x microstepping
+await stepper.home({ endstopPin: 22, direction: -1 });
+
+// Servo Motor
+const servo = new ServoActuator({
+  pin: 18,
+  minPulse: 500,
+  maxPulse: 2500,
+  range: 180,
+});
+
+await servo.initialize();
+await servo.setAngle(90);  // Move to center
+await servo.setAngle(0);   // Move to minimum
+await servo.setAngle(180); // Move to maximum
+
+// Relay for digital switching
+const relay = new RelayActuator({
+  pin: 17,
+  activeHigh: true,
+});
+
+await relay.initialize();
+await relay.on();
+await relay.off();
+await relay.toggle();
+```
+
+## Trust Management
+
+Control what plugins and agents can do with fine-grained permissions.
+
+```typescript
+import { PluginTrustManager } from 'everythingos/services/trust';
+
+const trustManager = new PluginTrustManager();
+
+// Set trust level for a plugin (trusted, restricted, sandboxed)
+trustManager.setTrustLevel('my-plugin', 'restricted');
+
+// Grant specific permissions
+trustManager.grantPermission('my-plugin', {
+  permission: 'network',
+  scope: 'api.example.com',
+  expiresAt: Date.now() + 86400000, // 24 hours
+});
+
+trustManager.grantPermission('my-plugin', {
+  permission: 'filesystem',
+  scope: '/data/plugin-storage',
+});
+
+// Set restrictions
+trustManager.setRestrictions('my-plugin', {
+  rateLimit: 100,        // requests per minute
+  timeout: 5000,         // max execution time
+  maxMemory: 50,         // MB
+  maxCpu: 25,            // percentage
+  blockedPatterns: ['/etc/*', '/root/*'],
+});
+
+// Check permissions before operations
+if (trustManager.checkPermission('my-plugin', 'network', 'api.example.com')) {
+  // Allowed to make network request
+}
+
+// View audit trail
+const violations = trustManager.getViolations('my-plugin');
+for (const v of violations) {
+  console.log(`${v.timestamp}: ${v.permission} - ${v.details}`);
+}
+```
+
+**Permission Types:**
+- `network`: HTTP/WebSocket connections
+- `filesystem`: File read/write
+- `state`: World state access
+- `events`: Event bus pub/sub
+- `agents`: Agent communication
+- `hardware`: GPIO/I2C/SPI access
+- `execute`: Shell command execution
+- `memory`: Long-term memory access
+- `llm`: LLM API calls
+- `secrets`: Environment variables
+- `spawn`: Child process creation
+- `scheduler`: Cron/timer creation
+- `plugins`: Other plugin invocation
+- `admin`: System administration
+- `audit`: Audit log access
+- `trust`: Trust level modification
+
+## Explainability
+
+Audit and explain every decision made by agents.
+
+```typescript
+import { DecisionExplainability } from 'everythingos/services/explainability';
+
+const explainability = new DecisionExplainability();
+
+// Record a decision
+await explainability.recordDecision({
+  agentId: 'decision-agent-1',
+  decisionType: 'action-approval',
+  input: {
+    action: 'send-notification',
+    target: 'user@example.com',
+  },
+  output: {
+    approved: true,
+    confidence: 0.87,
+  },
+  reasoning: 'User preferences indicate notifications are enabled',
+  keyFactors: [
+    { factor: 'user-preference', value: 'notifications-enabled', weight: 0.6 },
+    { factor: 'time-of-day', value: 'business-hours', weight: 0.3 },
+    { factor: 'urgency', value: 'medium', weight: 0.1 },
+  ],
+  alternatives: [
+    { option: 'delay-notification', confidence: 0.65 },
+    { option: 'suppress-notification', confidence: 0.23 },
+  ],
+});
+
+// Record outcome after execution
+await explainability.recordOutcome(decisionId, {
+  success: true,
+  effects: ['notification-sent', 'user-acknowledged'],
+  executionTime: 245,
+});
+
+// Query decisions
+const decisions = await explainability.queryDecisions({
+  agentId: 'decision-agent-1',
+  type: 'action-approval',
+  status: 'approved',
+  minConfidence: 0.8,
+  since: Date.now() - 86400000, // Last 24 hours
+});
+
+// Generate human-readable explanation
+const explanation = await explainability.explain(decisionId);
+console.log(explanation);
+// Output:
+// ## Decision: action-approval
+// **Agent:** decision-agent-1
+// **Time:** 2024-01-15 14:32:00
+//
+// **Input:** Send notification to user@example.com
+// **Decision:** Approved (87% confidence)
+//
+// **Key Factors:**
+// - User preference: notifications enabled (60% weight)
+// - Time of day: business hours (30% weight)
+// - Urgency: medium (10% weight)
+//
+// **Alternatives Considered:**
+// - Delay notification (65% confidence)
+// - Suppress notification (23% confidence)
+//
+// **Outcome:** Success (245ms execution)
+
+// Get statistics
+const stats = explainability.getStatistics();
+console.log(`Approval rate: ${stats.approvalRate}%`);
+console.log(`Avg confidence: ${stats.avgConfidence}`);
+console.log(`Success rate: ${stats.successRate}%`);
+```
+
+## Approval Gate & Intent System
+
+Human-in-the-loop approval for sensitive operations.
+
+### Approval Gate Agent
+
+```typescript
+import { ApprovalGateAgent } from 'everythingos/agents/decision';
+
+const approvalGate = new ApprovalGateAgent({
+  defaultTimeout: 300000, // 5 minutes
+  notificationChannels: ['cli', 'slack', 'webhook'],
+  autoApproveRules: [
+    { riskLevel: 'low', autoApprove: true },
+    { agentId: 'trusted-agent', autoApprove: true },
+  ],
+});
+
+await approvalGate.start();
+
+// Request approval for an action
+const approval = await approvalGate.requestApproval({
+  action: 'deploy-production',
+  agentId: 'deployment-agent',
+  riskLevel: 'high',
+  details: {
+    version: '2.1.0',
+    environment: 'production',
+    rollbackPlan: 'automatic',
+  },
+  requiredApprovers: 1,
+});
+
+if (approval.approved) {
+  console.log(`Approved by ${approval.approver}`);
+  // Proceed with deployment
+} else {
+  console.log(`Denied: ${approval.reason}`);
+}
+
+// View pending approvals
+const pending = approvalGate.getPendingApprovals();
+for (const request of pending) {
+  console.log(`${request.id}: ${request.action} (${request.riskLevel})`);
+}
+
+// View approval history
+const history = approvalGate.getApprovalHistory({ limit: 50 });
+const stats = approvalGate.getStatistics();
+console.log(`Approval rate: ${stats.approvalRate}%`);
+```
+
+### Intent Contracts
+
+Declare agent intentions with constraints and dependencies.
+
+```typescript
+import { IntentManager, IntentBuilder } from 'everythingos/runtime';
+
+const intentManager = new IntentManager();
+
+// Build an intent with fluent API
+const intent = new IntentBuilder()
+  .communicate('notify-user', {
+    channel: 'email',
+    recipient: 'user@example.com',
+    message: 'Task completed',
+  })
+  .withPriority('high')
+  .requiresApproval()
+  .withTimeout(30000)
+  .withRetry({ maxAttempts: 3, backoff: 'exponential' })
+  .dependsOn('task-complete')
+  .excludes('silent-mode')
+  .build();
+
+// Submit intent for execution
+const result = await intentManager.submit(intent);
+
+// Compound intents for multi-step operations
+const workflow = new IntentBuilder()
+  .compound([
+    IntentBuilder.query('get-user-data', { userId: '123' }),
+    IntentBuilder.execute('process-data', { transform: 'normalize' }),
+    IntentBuilder.store('save-results', { destination: 'database' }),
+  ])
+  .withPriority('medium')
+  .build();
+
+await intentManager.submit(workflow);
+
+// Query intent history
+const history = intentManager.getHistory({
+  status: 'completed',
+  type: 'execute',
+  since: Date.now() - 3600000,
+});
+```
+
+### Tool Registry
+
+Central registry for agent tools with permission controls.
+
+```typescript
+import { ToolRegistry } from 'everythingos/services/tools';
+
+const toolRegistry = new ToolRegistry();
+
+// Register a tool
+toolRegistry.register({
+  name: 'send-email',
+  description: 'Send an email to a recipient',
+  trustLevel: 'moderate', // safe, moderate, sensitive, dangerous
+  parameters: {
+    type: 'object',
+    properties: {
+      to: { type: 'string', format: 'email' },
+      subject: { type: 'string', maxLength: 200 },
+      body: { type: 'string' },
+    },
+    required: ['to', 'subject', 'body'],
+  },
+  handler: async (params, context) => {
+    // Validate and execute
+    await sendEmail(params.to, params.subject, params.body);
+    return { success: true, messageId: '...' };
+  },
+  requiresApproval: true,
+  timeout: 10000,
+});
+
+// Grant tool access to an agent
+toolRegistry.grantAccess('my-agent', 'send-email');
+
+// Execute tool (with approval if required)
+const result = await toolRegistry.execute('send-email', {
+  to: 'user@example.com',
+  subject: 'Hello',
+  body: 'World',
+}, {
+  agentId: 'my-agent',
+  requestId: 'req-123',
+});
+
+// Generate tool prompts for LLM
+const toolPrompt = toolRegistry.generatePrompt('my-agent');
+
+// View execution audit log
+const auditLog = toolRegistry.getAuditLog({ tool: 'send-email', limit: 100 });
+```
+
 ## Directory Structure
 
 ```
@@ -747,20 +1514,28 @@ everythingos/
 │   │   ├── state/           # World state and snapshot management
 │   │   └── registry/        # Agent and plugin registration
 │   ├── services/
-│   │   └── memory/          # Three-layer memory architecture
-│   │       ├── WorkingMemory.ts      # Short-term scoped memory
-│   │       ├── EpisodicMemory.ts     # Conversation history
-│   │       ├── LongTermMemory.ts     # Persistent knowledge
-│   │       ├── MemoryService.ts      # Unified memory interface
-│   │       └── adapters/             # Storage backends
+│   │   ├── memory/          # Three-layer memory architecture
+│   │   │   ├── WorkingMemory.ts      # Short-term scoped memory
+│   │   │   ├── EpisodicMemory.ts     # Conversation history
+│   │   │   ├── LongTermMemory.ts     # Persistent knowledge
+│   │   │   ├── MemoryService.ts      # Unified memory interface
+│   │   │   └── adapters/             # Storage backends
+│   │   ├── trust/           # Trust management
+│   │   │   └── PluginTrustManager.ts # Permission and sandbox control
+│   │   ├── explainability/  # Decision audit and explanation
+│   │   │   └── DecisionExplainability.ts
+│   │   └── tools/           # Tool registry and execution
+│   │       └── ToolRegistry.ts       # Centralized tool management
 │   ├── runtime/
 │   │   ├── Agent.ts         # Base agent class
 │   │   ├── LLMRouter.ts     # LLM provider abstraction
+│   │   ├── IntentContract.ts # Intent declaration and management
 │   │   └── providers/       # OpenAI, Claude, Gemini, Local providers
 │   ├── agents/              # Built-in agent implementations
 │   │   ├── perception/      # Monitoring and observation agents
 │   │   ├── analysis/        # Data processing agents
 │   │   ├── decision/        # Decision-making agents
+│   │   │   └── ApprovalGateAgent.ts  # Human-in-the-loop approval
 │   │   ├── execution/       # Action-taking agents
 │   │   └── learning/        # Learning and optimization agents
 │   ├── workflows/           # Workflow definitions
@@ -768,9 +1543,37 @@ everythingos/
 │   │   ├── discord/
 │   │   ├── slack/
 │   │   ├── github/
-│   │   └── ...
+│   │   ├── platforms/       # Hardware platform support
+│   │   │   ├── JetsonPlatform.ts     # NVIDIA Jetson integration
+│   │   │   ├── RaspberryPiPlatform.ts # Raspberry Pi integration
+│   │   │   └── DeploymentManager.ts  # Fleet management & OTA
+│   │   ├── robotics/        # Robotics integration
+│   │   │   ├── ROS2Bridge.ts         # ROS2 communication
+│   │   │   ├── MotionController.ts   # Multi-joint motion
+│   │   │   └── SafetyMonitor.ts      # Real-time safety
+│   │   ├── swarm/           # Multi-agent coordination
+│   │   │   ├── SwarmCoordinator.ts   # Task allocation & consensus
+│   │   │   ├── FormationController.ts # Multi-robot formations
+│   │   │   └── MeshNetwork.ts        # Distributed networking
+│   │   └── hardware/        # Sensors and actuators
+│   │       ├── _base/               # Base classes
+│   │       │   ├── SensorPlugin.ts
+│   │       │   └── ActuatorPlugin.ts
+│   │       ├── sensors/
+│   │       │   ├── IMUSensor.ts
+│   │       │   ├── GPSSensor.ts
+│   │       │   └── TemperatureSensor.ts
+│   │       ├── actuators/
+│   │       │   ├── MotorActuator.ts
+│   │       │   ├── ServoActuator.ts
+│   │       │   └── RelayActuator.ts
+│   │       └── protocols/           # Communication protocols
+│   │           ├── I2CProtocol.ts
+│   │           ├── SerialProtocol.ts
+│   │           └── MQTTProtocol.ts
 │   ├── api/                 # REST API server
 │   └── config/              # System configuration
+├── BRIDGES.md               # Bridge architecture documentation
 ├── package.json
 └── tsconfig.json
 ```
@@ -793,6 +1596,34 @@ everythingos/
 | POST | `/api/memory/recall` | Semantic search memory |
 | GET | `/api/memory/conversation/:id` | Get conversation history |
 | GET | `/api/memory/stats` | Get memory statistics |
+| GET | `/api/trust/:pluginId` | Get plugin trust level |
+| PUT | `/api/trust/:pluginId` | Set plugin trust level |
+| GET | `/api/trust/:pluginId/permissions` | List plugin permissions |
+| POST | `/api/trust/:pluginId/permissions` | Grant permission |
+| GET | `/api/trust/:pluginId/violations` | Get violation audit log |
+| GET | `/api/decisions` | Query decision history |
+| GET | `/api/decisions/:id` | Get decision details |
+| GET | `/api/decisions/:id/explain` | Generate decision explanation |
+| GET | `/api/decisions/stats` | Get decision statistics |
+| GET | `/api/approvals` | List pending approvals |
+| POST | `/api/approvals/:id/approve` | Approve a request |
+| POST | `/api/approvals/:id/deny` | Deny a request |
+| GET | `/api/approvals/history` | Get approval history |
+| GET | `/api/tools` | List registered tools |
+| POST | `/api/tools/:name/execute` | Execute a tool |
+| GET | `/api/tools/audit` | Get tool execution audit log |
+| POST | `/api/intents` | Submit an intent |
+| GET | `/api/intents/:id` | Get intent status |
+| GET | `/api/swarm/agents` | List swarm agents |
+| POST | `/api/swarm/task` | Assign a task to swarm |
+| POST | `/api/swarm/consensus` | Request swarm consensus |
+| GET | `/api/hardware/platforms` | List detected platforms |
+| GET | `/api/hardware/sensors` | List available sensors |
+| GET | `/api/hardware/actuators` | List available actuators |
+| POST | `/api/ros2/publish` | Publish to ROS2 topic |
+| POST | `/api/ros2/service` | Call ROS2 service |
+| GET | `/api/safety/zones` | List safety zones |
+| GET | `/api/safety/violations` | Get safety violation log |
 
 ## Environment Variables
 
