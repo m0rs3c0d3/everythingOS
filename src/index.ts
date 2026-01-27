@@ -13,7 +13,8 @@
 //                          ╚██████╔╝███████║
 //                           ╚═════╝ ╚══════╝
 //
-//  LLM-Agnostic Multi-Agent Operating System
+//  LLM-Agnostic Multi-Agent Operating System v2
+//  From chatbots to robot swarms
 //
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -48,8 +49,26 @@ export { getConfig, updateConfig, SystemConfig } from './config/system';
 // Services
 export * from './services';
 
+// Security
+export * from './security';
+
+// Observability
+export * from './observability';
+
 // Agents
 export * from './agents';
+
+// Hardware (optional imports)
+export * from './plugins/hardware';
+
+// Robotics (optional imports)
+export * from './plugins/robotics';
+
+// Swarm (optional imports)
+export * from './plugins/swarm';
+
+// Platforms (optional imports)
+export * from './plugins/platforms';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // EverythingOS Main Class
@@ -68,18 +87,61 @@ import { toolRegistry } from './services/tools';
 import { capabilityDiscovery } from './services/capabilities';
 import { getConfig, updateConfig, SystemConfig } from './config/system';
 import { startServer } from './api/server';
+import { security, SecurityConfig } from './security';
+import { metrics } from './observability';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Presets
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type Preset = 'core' | 'hardware' | 'robotics' | 'swarm' | 'full';
+
+const PRESET_DESCRIPTIONS: Record<Preset, string> = {
+  core: 'Core agents, memory, tools, workflows',
+  hardware: 'Sensors, actuators, protocols',
+  robotics: 'ROS2, motion control, safety',
+  swarm: 'Multi-robot coordination, mesh networking',
+  full: 'Everything included',
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Config Types
+// ─────────────────────────────────────────────────────────────────────────────
 
 export interface EverythingOSConfig {
+  // System config
   config?: Partial<SystemConfig>;
+  
+  // Presets to load
+  presets?: Preset[];
+  
+  // Plugins
   plugins?: PluginConfig[];
+  
+  // Security
+  security?: SecurityConfig;
+  
+  // Hardware platform
+  platform?: 'raspberry_pi' | 'jetson' | 'linux' | 'auto';
+  
+  // Lifecycle
   autoStart?: boolean;
   apiServer?: boolean;
+  apiPort?: number;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EverythingOS Class
+// ─────────────────────────────────────────────────────────────────────────────
 
 export class EverythingOS {
   private running = false;
+  private loadedPresets: Set<Preset> = new Set();
+  private startTime = 0;
 
   async initialize(options: EverythingOSConfig = {}): Promise<void> {
+    console.log('🚀 EverythingOS v2 initializing...');
+
     // Apply config
     if (options.config) {
       updateConfig(options.config);
@@ -89,6 +151,12 @@ export class EverythingOS {
 
     // Set default LLM provider
     llmRouter.setDefaultProvider(config.llm.defaultProvider);
+
+    // Load presets
+    const presets = options.presets ?? ['core'];
+    for (const preset of presets) {
+      await this.loadPreset(preset);
+    }
 
     // Register plugins
     if (options.plugins) {
@@ -102,11 +170,50 @@ export class EverythingOS {
       snapshotManager.startAutoSnapshot(config.snapshots.autoInterval);
     }
 
-    eventBus.emit('system:initialized', { timestamp: Date.now() });
+    console.log(`✅ Loaded presets: ${Array.from(this.loadedPresets).join(', ')}`);
+    eventBus.emit('system:initialized', { timestamp: Date.now(), presets: Array.from(this.loadedPresets) });
+  }
+
+  private async loadPreset(preset: Preset): Promise<void> {
+    if (this.loadedPresets.has(preset)) return;
+    
+    switch (preset) {
+      case 'core':
+        // Core is always loaded by default
+        console.log('  📦 Loading core preset...');
+        break;
+        
+      case 'hardware':
+        console.log('  📦 Loading hardware preset...');
+        // Hardware modules are already exported
+        break;
+        
+      case 'robotics':
+        console.log('  📦 Loading robotics preset...');
+        // Depends on hardware
+        await this.loadPreset('hardware');
+        break;
+        
+      case 'swarm':
+        console.log('  📦 Loading swarm preset...');
+        break;
+        
+      case 'full':
+        console.log('  📦 Loading full preset...');
+        await this.loadPreset('hardware');
+        await this.loadPreset('robotics');
+        await this.loadPreset('swarm');
+        break;
+    }
+    
+    this.loadedPresets.add(preset);
   }
 
   async start(): Promise<void> {
     if (this.running) return;
+
+    console.log('▶️  Starting EverythingOS...');
+    this.startTime = Date.now();
 
     // Start supervisor
     supervisor.start();
@@ -115,11 +222,16 @@ export class EverythingOS {
     await agentRegistry.startAll();
 
     this.running = true;
+    metrics.set('everythingos_agents_active', agentRegistry.getAll().length);
+    
     eventBus.emit('system:started', { timestamp: Date.now() });
+    console.log('✅ EverythingOS running');
   }
 
   async stop(): Promise<void> {
     if (!this.running) return;
+
+    console.log('⏹️  Stopping EverythingOS...');
 
     // Stop all agents
     await agentRegistry.stopAll();
@@ -133,15 +245,22 @@ export class EverythingOS {
     // Shutdown memory service
     memoryService.shutdown();
 
+    // Shutdown security
+    security.shutdown();
+
     this.running = false;
     eventBus.emit('system:stopped', { timestamp: Date.now() });
+    console.log('✅ EverythingOS stopped');
   }
 
   startAPI(port?: number): void {
     startServer(port);
   }
 
-  // Convenience accessors
+  // ─────────────────────────────────────────────────────────────────────────
+  // Convenience Accessors
+  // ─────────────────────────────────────────────────────────────────────────
+
   get events() { return eventBus; }
   get agents() { return agentRegistry; }
   get plugins() { return pluginRegistry; }
@@ -151,14 +270,45 @@ export class EverythingOS {
   get intents() { return intentManager; }
   get capabilities() { return capabilityDiscovery; }
   get llm() { return llmRouter; }
+  get sec() { return security; }
   get isRunning() { return this.running; }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Status
+  // ─────────────────────────────────────────────────────────────────────────
+
+  getStatus(): {
+    running: boolean;
+    uptime: number;
+    presets: Preset[];
+    agents: number;
+    plugins: number;
+    events: number;
+  } {
+    return {
+      running: this.running,
+      uptime: this.running ? Date.now() - this.startTime : 0,
+      presets: Array.from(this.loadedPresets),
+      agents: agentRegistry.getAll().length,
+      plugins: pluginRegistry.count,
+      events: 0, // Would get from eventBus stats
+    };
+  }
+
+  getMetrics(): Record<string, unknown> {
+    return metrics.exportJSON();
+  }
+
+  getMetricsPrometheus(): string {
+    return metrics.exportPrometheus();
+  }
 }
 
 // Default export
 export default EverythingOS;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Quick Start
+// Quick Start Functions
 // ─────────────────────────────────────────────────────────────────────────────
 
 export async function createEverythingOS(options: EverythingOSConfig = {}): Promise<EverythingOS> {
@@ -170,8 +320,25 @@ export async function createEverythingOS(options: EverythingOSConfig = {}): Prom
   }
   
   if (options.apiServer) {
-    os.startAPI();
+    os.startAPI(options.apiPort);
   }
   
   return os;
 }
+
+// Preset quick starts
+export const createRoboticsOS = () => createEverythingOS({ 
+  presets: ['robotics'], 
+  autoStart: true 
+});
+
+export const createSwarmOS = () => createEverythingOS({ 
+  presets: ['swarm'], 
+  autoStart: true 
+});
+
+export const createFullOS = () => createEverythingOS({ 
+  presets: ['full'], 
+  autoStart: true,
+  apiServer: true,
+});
