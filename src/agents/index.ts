@@ -2,4 +2,5 @@
 // EVERYTHINGOS - Agents Module
 // ═══════════════════════════════════════════════════════════════════════════════
 
+export * from './foundation';
 export * from './decision';
