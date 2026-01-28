@@ -1,10 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // EVERYTHINGOS - Trust Module
 // ═══════════════════════════════════════════════════════════════════════════════
-
 export {
   PluginTrustManager,
   pluginTrustManager,
+} from './PluginTrustManager';
+
+export type {
   TrustLevel,
   PluginPermission,
   PermissionType,

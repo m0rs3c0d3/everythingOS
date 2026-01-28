@@ -4,7 +4,7 @@
 // Provides: GPIO, I2C, SPI, PWM, Camera (picamera2/libcamera)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { eventBus } from '../../../core/event-bus/EventBus';
+import { eventBus } from '../../core/event-bus/EventBus';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

@@ -4,9 +4,9 @@
 // Supports: L298N, TB6612, A4988, DRV8825, TMC2209
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { ActuatorPlugin, ActuatorConfig, CommandResult } from '../../_base/ActuatorPlugin';
+import { ActuatorPlugin, ActuatorConfig, CommandResult } from '../_base/ActuatorPlugin';
 import { SerialProtocol } from '../../protocols/SerialProtocol';
-import { ActuatorCommand, ActuatorState } from '../../_base/HardwareTypes';
+import { ActuatorCommand, ActuatorState } from '../_base/HardwareTypes';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Motor Configuration

@@ -4,9 +4,9 @@
 // Supports: MPU6050, MPU9250, LSM6DS3, BNO055
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { SensorPlugin, SensorConfig } from '../../_base/SensorPlugin';
+import { SensorPlugin, SensorConfig } from '../_base/SensorPlugin';
 import { I2CProtocol } from '../../protocols/I2CProtocol';
-import { OrientationData, VelocityData } from '../../_base/HardwareTypes';
+import { OrientationData, VelocityData } from '../_base/HardwareTypes';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // IMU Configuration

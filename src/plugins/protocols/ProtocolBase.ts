@@ -4,7 +4,7 @@
 // Protocols handle the low-level communication with hardware
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { eventBus } from '../../../core/event-bus/EventBus';
+import { eventBus } from '../../core/event-bus/EventBus';
 import { ConnectionConfig, ProtocolType } from '../_base/HardwareTypes';
 
 // ─────────────────────────────────────────────────────────────────────────────

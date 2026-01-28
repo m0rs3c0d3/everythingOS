@@ -16,8 +16,12 @@ export {
   memoryService,
   AgentMemory,
   WorkflowMemory,
+} from './MemoryService';
+
+export type {
   DecisionContext,
   MemoryStats,
+  MemoryServiceConfig,
 } from './MemoryService';
 
 // Adapters

@@ -4,7 +4,7 @@
 // Provides: GPIO, I2C, SPI, CSI Camera, CUDA acceleration
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { eventBus } from '../../../core/event-bus/EventBus';
+import { eventBus } from '../../core/event-bus/EventBus';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

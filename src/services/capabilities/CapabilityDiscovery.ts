@@ -4,11 +4,11 @@
 // Enables dynamic planning and graceful degradation
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { eventBus } from '../core/event-bus/EventBus';
-import { agentRegistry } from '../core/registry/AgentRegistry';
-import { pluginRegistry } from '../core/registry/PluginRegistry';
-import { toolRegistry } from '../services/tools';
-import { workflowRegistry } from '../core/workflow/WorkflowRegistry';
+import { eventBus } from '../../core/event-bus/EventBus';
+import { agentRegistry } from '../../core/registry/AgentRegistry';
+import { pluginRegistry } from '../../core/registry/PluginRegistry';
+import { toolRegistry } from '../tools';
+import { workflowRegistry } from '../../core/workflow/WorkflowRegistry';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

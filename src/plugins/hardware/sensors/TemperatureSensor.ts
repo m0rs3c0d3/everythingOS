@@ -3,7 +3,7 @@
 // I2C-based temperature sensors (BME280, BMP280, TMP102, etc.)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { SensorPlugin, SensorConfig } from '../../_base/SensorPlugin';
+import { SensorPlugin, SensorConfig } from '../_base/SensorPlugin';
 import { I2CProtocol } from '../../protocols/I2CProtocol';
 
 // ─────────────────────────────────────────────────────────────────────────────

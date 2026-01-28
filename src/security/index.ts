@@ -1,29 +1,26 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // EVERYTHINGOS - Security Module
 // ═══════════════════════════════════════════════════════════════════════════════
-
 export {
   SecurityManager,
-  SecurityConfig,
   security,
-  
-  // Sub-components
   InputValidator,
+  RateLimiter,
+  AuthManager,
+  SecretsManager,
+  AuditLog,
+} from './SecurityManager';
+
+export type {
+  SecurityConfig,
   ValidationResult,
   Schema,
-  
-  RateLimiter,
+  SchemaType,
   RateLimitConfig,
   RateLimitResult,
-  
-  AuthManager,
   AuthConfig,
   AuthToken,
-  
-  SecretsManager,
   SecretsConfig,
-  
-  AuditLog,
   AuditEntry,
   AuditConfig,
 } from './SecurityManager';

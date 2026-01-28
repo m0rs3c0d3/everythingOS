@@ -4,9 +4,9 @@
 // Supports: NEO-6M, NEO-7M, NEO-M8N, BN-220, and other NMEA-compatible modules
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { SensorPlugin, SensorConfig } from '../../_base/SensorPlugin';
+import { SensorPlugin, SensorConfig } from '../_base/SensorPlugin';
 import { SerialProtocol } from '../../protocols/SerialProtocol';
-import { PositionData } from '../../_base/HardwareTypes';
+import { PositionData } from '../_base/HardwareTypes';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GPS Configuration

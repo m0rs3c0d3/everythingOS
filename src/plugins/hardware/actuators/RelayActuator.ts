@@ -4,9 +4,9 @@
 // Supports: Single relays, relay boards, GPIO pins
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { ActuatorPlugin, ActuatorConfig, CommandResult } from '../../_base/ActuatorPlugin';
+import { ActuatorPlugin, ActuatorConfig, CommandResult } from '../_base/ActuatorPlugin';
 import { SerialProtocol } from '../../protocols/SerialProtocol';
-import { ActuatorCommand, ActuatorState } from '../../_base/HardwareTypes';
+import { ActuatorCommand, ActuatorState } from '../_base/HardwareTypes';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Relay Configuration
