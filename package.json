@@ -12,10 +12,12 @@
     "api": "tsx src/api/server.ts",
     "demo": "tsx examples/demo-simple.ts",
     "demo:cli": "tsx examples/demo-cli.ts",
+    "sim": "tsx examples/demo-robot.ts",
     "test": "vitest",
     "test:run": "vitest run",
     "lint": "eslint src --ext .ts"
-  },
+},
+
   "keywords": ["multi-agent", "llm", "workflow", "automation", "ai-agents", "robotics", "swarm", "iot"],
   "author": "m0rs3",
   "license": "MIT",
